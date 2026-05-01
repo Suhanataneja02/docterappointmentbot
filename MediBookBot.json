@@ -1,0 +1,269 @@
+{
+  "name": "MediBookBot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are an AI assistant that helps users book doctor appointments.\n\nYour responsibilities:\n- Greet the user politely.\n- Understand the user’s request.\n- Collect details step-by-step (do not ask everything at once):\n  • Patient name\n  • Contact number\n  • Symptoms or reason for visit\n  • Preferred doctor or specialization\n  • Preferred date\n\nConversation rules:\n- Be polite, clear, and professional.\n- Keep responses short and easy to understand.\n- Ask only one or two questions at a time.\n- Do not assume missing details.\n\nSlot handling:\n- When the user asks for available time slots, provide a list of realistic slots between 9 AM and 5 PM.\n- Always show 4–6 slots.\n- Example slots:\n  - 09:00 AM\n  - 10:30 AM\n  - 12:00 PM\n  - 02:00 PM\n  - 03:30 PM\n  - 04:30 PM\n\n- Ask the user to select ONE slot.\n- Do NOT say \"no slots available\".\n- Do NOT mention anything about backend or system.\n\nConfirmation:\n- Once the user selects a slot, confirm details in this format:\n\n  Appointment Details:\n  - Name: <name>\n  - Contact Number: <number>\n  - Doctor/Specialization: <type>\n  - Date: <date>\n  - Time: <slot>\n\n- Ask: \"Should I confirm this appointment?\"\n\nSafety rules:\n- Do NOT provide medical advice or diagnosis.\n- If the user mentions serious symptoms, suggest seeking immediate medical help.\n\nGoal:\nGuide the user step-by-step from request → details collection → slot selection → confirmation → booking."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        544,
+        224
+      ],
+      "id": "23d992a6-e767-4ac4-933d-dfa170a000f3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        448
+      ],
+      "id": "ae7e9729-b84c-44a0-9286-835f3e7b45f8",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "suhanataneja145@gmail.com",
+          "mode": "list",
+          "cachedResultName": "suhanataneja145@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {
+          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        448
+      ],
+      "id": "dee71d5c-df01-4c0e-bd58-0fac1f796c53",
+      "name": "Create",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "L65EKK5DImA3czew",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "suhanataneja145@gmail.com",
+          "mode": "list",
+          "cachedResultName": "suhanataneja145@gmail.com"
+        },
+        "limit": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Limit', ``, 'number') }}",
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        736,
+        448
+      ],
+      "id": "266fafd9-54e9-4e48-ba9e-46c12a21169b",
+      "name": "Search",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "L65EKK5DImA3czew",
+          "name": "Google Calendar account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "timezone": "Asia/Kolkata"
+        }
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        864,
+        448
+      ],
+      "id": "20e07607-8abf-4ace-8e3a-9d453bb51b16",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-chat-v3.1",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        352,
+        448
+      ],
+      "id": "e680f489-ebbc-4f14-8a25-35318d9be63c",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "aKev9OrzFieVEmNC",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        224
+      ],
+      "id": "f7811d58-55f0-42a3-9cf6-65c6a85309b9",
+      "name": "Telegram Trigger",
+      "webhookId": "221cdd8a-c9f2-4f50-8cbc-de5a95c79809",
+      "credentials": {
+        "telegramApi": {
+          "id": "tA84jiSmLLY5bN7N",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        224
+      ],
+      "id": "49ecadd4-e2fc-4e10-8ab0-a0c41a83317d",
+      "name": "Send a text message",
+      "webhookId": "3a30f74b-e690-4733-bf0e-edc1191995fd",
+      "credentials": {
+        "telegramApi": {
+          "id": "tA84jiSmLLY5bN7N",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1ba2ca9c-93fb-48d3-92bb-96967cc04f5f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "494451e854483c05132855ab8911032d7eb51becccd17ddba5c43434c0ad91d1"
+  },
+  "id": "qTWwsXOqDla5ZKdy",
+  "tags": []
+}
